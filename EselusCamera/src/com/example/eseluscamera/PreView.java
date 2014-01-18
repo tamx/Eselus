@@ -1,8 +1,9 @@
-package com.example.remoteoculus;
+package com.example.eseluscamera;
 
 import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.List;
@@ -24,6 +25,7 @@ import android.view.ViewGroup;
 
 public class PreView extends SurfaceView implements SurfaceHolder.Callback,
 		Camera.PreviewCallback, Camera.AutoFocusCallback, Runnable {
+	private Context context = null;
 	private CameraEx myCamera = null;
 	private Thread thread = null;
 	int previewWidth = 0;
@@ -32,10 +34,10 @@ public class PreView extends SurfaceView implements SurfaceHolder.Callback,
 
 	public PreView(Context context, AttributeSet attrs) {
 		super(context, attrs);
+		this.context = context;
 
 		SurfaceHolder holder = getHolder();
 
-		// ƒR[ƒ‹ƒoƒbƒN‚ğ“o˜^
 		holder.addCallback(this);
 		holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
 
@@ -49,35 +51,25 @@ public class PreView extends SurfaceView implements SurfaceHolder.Callback,
 
 	@Override
 	public void surfaceCreated(SurfaceHolder holder) {
-		/* ƒfƒoƒCƒX‚ª—˜—p‰Â”\‚ÈƒJƒƒ‰‚ÌŒÂ”‚ğæ“¾‚·‚é */
 		int cameras = 0;
 		int id = 0;
-		cameras = CameraEx.getNumberOfCameras(); /* šAddon—pAPIg—p‰ÓŠš */
+		cameras = CameraEx.getNumberOfCameras();
 
 		if (cameras > 0) {
-			/* ƒJƒƒ‰‚Ì”‚ª0ˆÈã‚Ìê‡AŠeƒJƒƒ‰ƒCƒ“ƒtƒH‚ğŠm”F‚µ‚ÄƒJƒƒ‰‚Ì–¼‘O‚ğƒŠƒXƒg‚É‚·‚é */
-			CameraEx.CameraInfo info = new CameraEx.CameraInfo(); /*
-																 * šAddon—pAPIg—p‰ÓŠ
-																 * š
-																 */
+			CameraEx.CameraInfo info = new CameraEx.CameraInfo();
 			for (int i = 0; i < cameras; i++) {
-				CameraEx.getCameraInfo(i, info); /* šAddon—pAPIg—p‰ÓŠš */
+				CameraEx.getCameraInfo(i, info); /* ï¿½ï¿½Addonï¿½pAPIï¿½gï¿½pï¿½Óï¿½ï¿½ï¿½ */
 				if (info.facing == CameraEx.CameraInfo.CAMERA_FACING_BACK) {
-					// ”w–Ê‚É‚Â‚¢‚Ä‚¢‚éiƒAƒEƒgƒJƒƒ‰j
 					if (info.mode == CameraEx.CameraInfo.CAMERA_MODE_SINGLE) {
-						// ’PŠáƒ‚[ƒh
 					} else if (info.mode == CameraEx.CameraInfo.CAMERA_MODE_DOUBLE) {
-						// “ñŠáƒ‚[ƒh
 						id = i;
 						break;
 					}
 				} else if (info.facing == CameraEx.CameraInfo.CAMERA_FACING_FRONT) {
-					// ‰t»‘¤‚É‚Â‚¢‚Ä‚¢‚éiƒCƒ“ƒJƒƒ‰j
 				}
 			}
 		}
 
-		// ƒJƒƒ‰‚ğ‹N“®‚·‚é
 		myCamera = CameraEx.open(id);
 		new SurfaceController(this).setStereoView(true);
 		try {
@@ -98,20 +90,17 @@ public class PreView extends SurfaceView implements SurfaceHolder.Callback,
 
 		boolean portrait = isPortrait();
 
-		// ‰æ–Ê‚ÌŒü‚«‚ğ•ÏX‚·‚é
 		if (portrait) {
 			myCamera.setDisplayOrientation(90);
 		} else {
 			myCamera.setDisplayOrientation(0);
 		}
 
-		// ƒTƒCƒY‚ğİ’è
 		List<Camera.Size> sizes = parameters.getSupportedPreviewSizes();
 		Camera.Size size = sizes.get(0);
 		parameters.setPreviewSize(size.width, size.height);
 		parameters.setWhiteBalance(Camera.Parameters.WHITE_BALANCE_AUTO);
 
-		// ƒŒƒCƒAƒEƒg’²®
 		ViewGroup.LayoutParams layoutParams = getLayoutParams();
 		if (portrait) {
 			layoutParams.width = size.height;
@@ -146,7 +135,6 @@ public class PreView extends SurfaceView implements SurfaceHolder.Callback,
 	protected void onLayout(boolean changed, int l, int t, int r, int b) {
 	}
 
-	// ‰æ–Ê‚ÌŒü‚«‚ğæ“¾‚·‚é
 	protected boolean isPortrait() {
 		return (this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT);
 	}
@@ -154,7 +142,6 @@ public class PreView extends SurfaceView implements SurfaceHolder.Callback,
 	@Override
 	public void onPreviewFrame(byte[] data, Camera camera) {
 		System.out.println("changed.");
-		// “Ç‚İ‚Ş”ÍˆÍ
 		previewWidth = camera.getParameters().getPreviewSize().width;
 		previewHeight = camera.getParameters().getPreviewSize().height;
 		this.data = data;
@@ -187,15 +174,23 @@ public class PreView extends SurfaceView implements SurfaceHolder.Callback,
 			ssocket = new ServerSocket(4445);
 			while (!Thread.currentThread().isInterrupted()) {
 				try {
-					Socket socket = ssocket.accept();
+					Socket socket = new Socket(
+							InetAddress.getByName("192.168.10.26"), 4444);
 					System.err.println("connected.");
-					if (data != null) {
-						DataOutputStream os = new DataOutputStream(
-								socket.getOutputStream());
-						os.writeInt(previewWidth);
-						os.writeInt(previewHeight);
-						os.writeInt(data.length);
-						os.write(data);
+					if (this.data != null) {
+						byte[] data = this.data;
+						Bitmap bmp = getBitmapImageFromYUV(data,
+								this.previewWidth, this.previewHeight);
+						// DataOutputStream os = new DataOutputStream(
+						// socket.getOutputStream());
+						OutputStream os = socket.getOutputStream();
+						// os.write("HTTP/1.0 302 found\n".getBytes());
+						// os.write("Content-Type: image/jpeg;\n\n".getBytes());
+						// os.writeInt(previewWidth);
+						// os.writeInt(previewHeight);
+						// os.writeInt(data.length);
+						// os.write(data);
+						bmp.compress(Bitmap.CompressFormat.JPEG, 20, os);
 						os.flush();
 						os.close();
 					}

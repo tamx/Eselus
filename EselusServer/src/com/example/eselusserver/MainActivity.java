@@ -1,4 +1,4 @@
-package com.example.remoteoculus;
+package com.example.eselusserver;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -12,7 +12,6 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 
-		/* フルスクリーンにする */
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		// Keep screen on
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
