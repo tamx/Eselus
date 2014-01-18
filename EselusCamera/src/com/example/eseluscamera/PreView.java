@@ -1,8 +1,8 @@
 package com.example.eseluscamera;
 
 import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -181,16 +181,19 @@ public class PreView extends SurfaceView implements SurfaceHolder.Callback,
 						byte[] data = this.data;
 						Bitmap bmp = getBitmapImageFromYUV(data,
 								this.previewWidth, this.previewHeight);
-						// DataOutputStream os = new DataOutputStream(
-						// socket.getOutputStream());
-						OutputStream os = socket.getOutputStream();
+						ByteArrayOutputStream bos = new ByteArrayOutputStream();
+						bmp.compress(Bitmap.CompressFormat.JPEG, 20, bos);
+						byte[] jpeg = bos.toByteArray();
+						DataOutputStream os = new DataOutputStream(
+								socket.getOutputStream());
+						// OutputStream os = socket.getOutputStream();
 						// os.write("HTTP/1.0 302 found\n".getBytes());
 						// os.write("Content-Type: image/jpeg;\n\n".getBytes());
-						// os.writeInt(previewWidth);
-						// os.writeInt(previewHeight);
-						// os.writeInt(data.length);
+						os.writeInt(previewWidth);
+						os.writeInt(previewHeight);
+						os.writeInt(jpeg.length);
+						os.write(jpeg);
 						// os.write(data);
-						bmp.compress(Bitmap.CompressFormat.JPEG, 20, os);
 						os.flush();
 						os.close();
 					}

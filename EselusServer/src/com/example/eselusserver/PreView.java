@@ -1,6 +1,5 @@
 package com.example.eselusserver;
 
-import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -66,35 +65,31 @@ public class PreView extends SurfaceView implements SurfaceHolder.Callback,
 					System.err.println("connected.");
 					DataInputStream is = new DataInputStream(
 							socket.getInputStream());
-					// BufferedReader reader = new BufferedReader(
-					// new InputStreamReader(is));
-					// reader.readLine();
-					// reader.readLine();
-					// reader.readLine();
-					ByteArrayOutputStream os = new ByteArrayOutputStream();
-					byte[] buf = new byte[10 * 1024];
 					while (true) {
-						int len = is.read(buf);
-						if (len == -1) {
-							break;
-						}
-						os.write(buf, 0, len);
-					}
-					socket.close();
-					byte[] data = os.toByteArray();
-					Bitmap bmp = BitmapFactory.decodeByteArray(data, 0,
-							data.length);
-					SurfaceHolder holder = getHolder();
-					Canvas canvas = null;
-					try {
-						canvas = holder.lockCanvas();
-						if (canvas != null && bmp != null) {
-							canvas.drawBitmap(bmp, 0, 0, null);
-							holder.unlockCanvasAndPost(canvas);
-						}
-					} finally {
-						if (canvas != null) {
-							holder.unlockCanvasAndPost(canvas);
+						// BufferedReader reader = new BufferedReader(
+						// new InputStreamReader(is));
+						// reader.readLine();
+						// reader.readLine();
+						// reader.readLine();
+						int width = is.readInt();
+						int height = is.readInt();
+						int length = is.readInt();
+						byte[] jpeg = new byte[length];
+						is.readFully(jpeg);
+						Bitmap bmp = BitmapFactory.decodeByteArray(jpeg, 0,
+								jpeg.length);
+						SurfaceHolder holder = getHolder();
+						Canvas canvas = null;
+						try {
+							canvas = holder.lockCanvas();
+							if (canvas != null && bmp != null) {
+								canvas.drawBitmap(bmp, 0, 0, null);
+								holder.unlockCanvasAndPost(canvas);
+							}
+						} finally {
+							if (canvas != null) {
+								holder.unlockCanvasAndPost(canvas);
+							}
 						}
 					}
 				} catch (Exception e) {
