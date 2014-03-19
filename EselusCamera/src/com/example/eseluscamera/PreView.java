@@ -3,7 +3,6 @@ package com.example.eseluscamera;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.List;
@@ -172,43 +171,58 @@ public class PreView extends SurfaceView implements SurfaceHolder.Callback,
 		ServerSocket ssocket = null;
 		try {
 			ssocket = new ServerSocket(4445);
-			while (!Thread.currentThread().isInterrupted()) {
-				try {
-					Socket socket = new Socket(
-							InetAddress.getByName("192.168.10.26"), 4444);
-					System.err.println("connected.");
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+		while (!Thread.currentThread().isInterrupted()) {
+			Socket socket = null;
+			DataOutputStream os = null;
+			try {
+				socket = ssocket.accept();
+				System.err.println("connected.");
+				os = new DataOutputStream(socket.getOutputStream());
+				while (true) {
 					if (this.data != null) {
 						byte[] data = this.data;
 						Bitmap bmp = getBitmapImageFromYUV(data,
 								this.previewWidth, this.previewHeight);
 						ByteArrayOutputStream bos = new ByteArrayOutputStream();
-						bmp.compress(Bitmap.CompressFormat.JPEG, 20, bos);
+						bmp.compress(Bitmap.CompressFormat.JPEG, 90, bos);
 						byte[] jpeg = bos.toByteArray();
-						DataOutputStream os = new DataOutputStream(
-								socket.getOutputStream());
 						// OutputStream os = socket.getOutputStream();
 						// os.write("HTTP/1.0 302 found\n".getBytes());
 						// os.write("Content-Type: image/jpeg;\n\n".getBytes());
 						os.writeInt(previewWidth);
 						os.writeInt(previewHeight);
+						MainActivity activity = (MainActivity) this.context;
+						os.writeShort(activity.left_x);
+						os.writeShort(activity.left_y);
+						os.writeShort(activity.left_zoom);
+						os.writeShort(activity.right_x);
+						os.writeShort(activity.right_y);
+						os.writeShort(activity.right_zoom);
 						os.writeInt(jpeg.length);
 						os.write(jpeg);
 						// os.write(data);
 						os.flush();
-						os.close();
 					}
-					socket.close();
-				} catch (IOException e) {
-					e.printStackTrace();
 				}
-			}
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		} finally {
-			if (ssocket != null) {
-				try {
-					ssocket.close();
-				} catch (IOException e) {
+			} catch (IOException e) {
+				e.printStackTrace();
+			} finally {
+				if (os != null) {
+					try {
+						os.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+				if (socket != null) {
+					try {
+						socket.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
 				}
 			}
 		}
