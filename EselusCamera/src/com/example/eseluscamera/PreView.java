@@ -168,17 +168,11 @@ public class PreView extends SurfaceView implements SurfaceHolder.Callback,
 
 	@Override
 	public void run() {
-		ServerSocket ssocket = null;
-		try {
-			ssocket = new ServerSocket(4445);
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
 		while (!Thread.currentThread().isInterrupted()) {
 			Socket socket = null;
 			DataOutputStream os = null;
 			try {
-				socket = ssocket.accept();
+				socket = new Socket("192.168.43.1", 4444);
 				System.err.println("connected.");
 				os = new DataOutputStream(socket.getOutputStream());
 				while (true) {

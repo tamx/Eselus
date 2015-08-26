@@ -109,9 +109,10 @@ public class PreView extends SurfaceView implements SurfaceHolder.Callback,
 												matrix.postRotate(180,
 														width / 2 / 2,
 														height / 2);
-												matrix.postScale(getWidth()
-														/ width,
-														(getHeight() - left_z)
+												matrix.postScale(
+														(float) getWidth()
+																/ width,
+														((float) getHeight() - left_z)
 																/ height);
 												matrix.postTranslate(getWidth()
 														/ 2 - left_x, -left_y);
@@ -131,9 +132,10 @@ public class PreView extends SurfaceView implements SurfaceHolder.Callback,
 												matrix.postRotate(180,
 														width / 2 / 2,
 														height / 2);
-												matrix.postScale(getWidth()
-														/ width,
-														(getHeight() - right_z)
+												matrix.postScale(
+														(float) getWidth()
+																/ width,
+														((float) getHeight() - right_z)
 																/ height);
 												matrix.postTranslate(-right_x,
 														-right_y);

@@ -13,8 +13,6 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 
-import com.example.remoteoculus.R;
-
 public class MainActivity extends Activity {
 	private int mode = 0;
 	protected int left_x = 0;
@@ -88,9 +86,9 @@ public class MainActivity extends Activity {
 					@Override
 					public void onClick(View v) {
 						if (mode < 0) {
-							left_zoom++;
+							left_zoom += 10;
 						} else if (mode > 0) {
-							right_zoom++;
+							right_zoom += 10;
 						}
 						update();
 					}
@@ -100,9 +98,9 @@ public class MainActivity extends Activity {
 					@Override
 					public void onClick(View v) {
 						if (mode < 0) {
-							left_zoom--;
+							left_zoom -= 10;
 						} else if (mode > 0) {
-							right_zoom--;
+							right_zoom -= 10;
 						}
 						update();
 					}
